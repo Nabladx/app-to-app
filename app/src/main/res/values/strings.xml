@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">app-to-app</string>
+    <string name="login_bob">Login Bob</string>
+    <string name="waiting_for_incoming_call">Waiting for incoming call</string>
+    <string name="login_alice">Login Alice</string>
+    <string name="start_call">Start call</string>
+    <string name="answer">Answer</string>
+    <string name="reject">Reject</string>
+    <string name="end">End</string>
+</resources>
