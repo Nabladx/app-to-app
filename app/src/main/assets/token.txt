@@ -1,0 +1,1 @@
+vonage jwt --app_id=a9b38c72-06fd-4879-b06b-ee664c2663e3 --subject=Alice --key_file=/home/andrew/app-to-app-server/app_to_app_tutorial.key --acl='{"paths":{"/*/users/**":{},"/*/conversations/**":{},"/*/sessions/**":{},"/*/devices/**":{},"/*/image/**":{},"/*/media/**":{},"/*/applications/**":{},"/*/push/**":{},"/*/knocking/**":{},"/*/legs/**":{}}}'

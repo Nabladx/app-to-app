@@ -1,23 +1,15 @@
 package com.example.app_to_app
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.view.forEach
-import com.example.app_to_app.ui.theme.ApptoappTheme
 import com.nexmo.client.NexmoCall
 import com.nexmo.client.NexmoCallEventListener
 import com.nexmo.client.NexmoCallMemberStatus
@@ -27,7 +19,11 @@ import com.nexmo.client.NexmoMember
 import com.nexmo.client.request_listener.NexmoApiError
 import com.nexmo.client.request_listener.NexmoConnectionListener
 import com.nexmo.client.request_listener.NexmoRequestListener
-import java.lang.Error
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+
 
 class MainActivity : ComponentActivity() {
 
@@ -141,14 +137,49 @@ class MainActivity : ComponentActivity() {
         content.forEach { it.visibility = View.GONE}
     }
 
+    fun getStringFromAssets(context: Context, path: String?): String? {
+        val buf = StringBuilder()
+        val text: InputStream
+        try {
+            text = context.assets.open(path!!)
+            val `in` = BufferedReader(InputStreamReader(text))
+            var str: String?
+            while (`in`.readLine().also { str = it } != null) {
+                buf.append(str)
+            }
+            `in`.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return buf.toString()
+    }
+    fun Executer(command: String?): String? {
+        val output = StringBuffer()
+        val p: Process
+        try {
+            p = Runtime.getRuntime().exec(command)
+            p.waitFor()
+            val reader =
+                BufferedReader(InputStreamReader(p.inputStream))
+            var line = ""
+            while (reader.readLine().also { line = it } != null) {
+                output.append(line + "n")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return output.toString()
+    }
     private fun loginAsAlice() {
+        val com = getStringFromAssets(this, "token.txt")
+        val command = Executer(com)
         otherUser = "Bob"
-        client.login("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTYwNTk5NjUsImp0aSI6IjY5MjJmYmEwLTVmNjUtMTFlZS1hMGQ1LTVkZDZkN2IwNWY2MSIsImFwcGxpY2F0aW9uX2lkIjoiYTliMzhjNzItMDZmZC00ODc5LWIwNmItZWU2NjRjMjY2M2UzIiwic3ViIjoiQWxpY2UiLCJleHAiOjE2OTYwNTk5ODcxMzAsImFjbCI6eyJwYXRocyI6eyIvKi91c2Vycy8qKiI6e30sIi8qL2NvbnZlcnNhdGlvbnMvKioiOnt9LCIvKi9zZXNzaW9ucy8qKiI6e30sIi8qL2RldmljZXMvKioiOnt9LCIvKi9pbWFnZS8qKiI6e30sIi8qL21lZGlhLyoqIjp7fSwiLyovYXBwbGljYXRpb25zLyoqIjp7fSwiLyovcHVzaC8qKiI6e30sIi8qL2tub2NraW5nLyoqIjp7fSwiLyovbGVncy8qKiI6e319fX0.I2vK8vBt_am7b_ETypJ0f3m0XeAOUVE15A_cydJTA0eeete9cJg9eWAW0dfUpOS-A0IVUqBkyd8CmG2CyrQmRm8EpgMyFc0EXYsGnQPJd9vieH0d85TNs08swXkj4q_OEeservmr2F0w92sTTNkxi40ROk_66jg_nC3NVi_XNVFVIVjhgpelDHE_4Y4OFYP6Fy-apxJ61v0Jx6_UaLoXpnFm0erQG7gTx0yv6Gobj9DIkffDwhn_3L1bdTmkNFHVPWhoS2HWhPMHVHuCYQcqfMYBgKd94cvsZdotMmWxRIK1AHl-1Agna94hzuovclauRax9eECULBhZllgWXd-QuQ")
+        client.login(command.toString())
     }
 
     private fun loginAsBob() {
         otherUser = "Alice"
-        client.login("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTYwNTk5NzcsImp0aSI6IjcwMDM4YWMwLTVmNjUtMTFlZS1hNWJhLTI3ZjA5Njk2ZjAxNCIsImFwcGxpY2F0aW9uX2lkIjoiYTliMzhjNzItMDZmZC00ODc5LWIwNmItZWU2NjRjMjY2M2UzIiwic3ViIjoiQm9iIiwiZXhwIjoxNjk2MDU5OTk4NjY4LCJhY2wiOnsicGF0aHMiOnsiLyovdXNlcnMvKioiOnt9LCIvKi9jb252ZXJzYXRpb25zLyoqIjp7fSwiLyovc2Vzc2lvbnMvKioiOnt9LCIvKi9kZXZpY2VzLyoqIjp7fSwiLyovaW1hZ2UvKioiOnt9LCIvKi9tZWRpYS8qKiI6e30sIi8qL2FwcGxpY2F0aW9ucy8qKiI6e30sIi8qL3B1c2gvKioiOnt9LCIvKi9rbm9ja2luZy8qKiI6e30sIi8qL2xlZ3MvKioiOnt9fX19.R-IEmBGUr7x7IrSJ933CQNdaJEItl97Y-kTIOPD1iPuS91ojbmHKuSpNdovMGwSbPRX7-HgKcpVDvwezq1AbD-Y2SuXfmAY9G7gPAhSr6WkuV04KUg1PUqCjqV15_4dXNOthw_20KKftEZfdd94ks8OKSqg5EV684TDFVyKrRYAmqfM5ZsbLw6w0PIwhAuArND7Scgk6G4xmRnFtEmoHVPwVQDVfkW98ickhaFCyi1HkUOy0JTdY-F62QhWuAFRn_zJC4LiBwqUsHWSKAKYOJ0y7yOQ6WEn2VFefBqcKRo47wzRqOp8cWIa7tBN-ugjXe6IZI__3LEwqWiBnPR6VfQ")
+        client.login("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTY1ODY5ODMsImp0aSI6Ijc4NDAxZWUwLTY0MzAtMTFlZS1iMDE2LWIzNjhhZWNjOWNkNyIsImFwcGxpY2F0aW9uX2lkIjoiYTliMzhjNzItMDZmZC00ODc5LWIwNmItZWU2NjRjMjY2M2UzIiwic3ViIjoiQm9iIiwiZXhwIjoxNjk2NTg3MDA0OTc0LCJhY2wiOnsicGF0aHMiOnsiLyovdXNlcnMvKioiOnt9LCIvKi9jb252ZXJzYXRpb25zLyoqIjp7fSwiLyovc2Vzc2lvbnMvKioiOnt9LCIvKi9kZXZpY2VzLyoqIjp7fSwiLyovaW1hZ2UvKioiOnt9LCIvKi9tZWRpYS8qKiI6e30sIi8qL2FwcGxpY2F0aW9ucy8qKiI6e30sIi8qL3B1c2gvKioiOnt9LCIvKi9rbm9ja2luZy8qKiI6e30sIi8qL2xlZ3MvKioiOnt9fX19.D6ZoHzlthycmRqXK-I5fjUAPCZ-CTHjtpu8RybZgMh7ebJkFUFRvUkXM5l0f34oBdz1hbZRfocfageIdWaInee6v5Z0UJycLxMd5p2HEhhsFXtuZ-doGKpOkwcT1W-ArZVCbPcQyEmOHIHek5aqSRN5bKr-1a9vKf6HDw1obNOC89xM8AynnzC1Sowm57ZlSnD0DcbjwE3g9uqUHOj4FcvxfToq-KKzzEcGLYfWNUyaUTWMv8bNFtViXdgdFs1PWs7fqRQEtagReO4r9wJfwMOlxMZcdDzBBBv05lmUHijgwco02-hwYaJCfMbfviWot7buwa9w1p8uxARo46vFdLw")
     }
 
     @SuppressLint("MissingPermission")
